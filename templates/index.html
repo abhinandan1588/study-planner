@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Study Planner</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230d9488' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z'/%3E%3Cpath d='M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<div class="app">
+
+  <!-- ======================= SIDEBAR ======================= -->
+  <aside class="sidebar" id="sidebar" aria-label="Main navigation">
+    <div class="brand">
+      <div class="brand-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+      </div>
+      <div class="brand-text">
+        <span class="brand-title">StudyPlanner</span>
+        <span class="brand-sub">Plan smart. Focus hard.</span>
+      </div>
+    </div>
+
+    <nav class="nav">
+      <button class="nav-item active" data-view="dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+        <span>Dashboard</span>
+      </button>
+      <button class="nav-item" data-view="tasks">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        <span>Tasks</span>
+        <span class="nav-badge" id="nav-tasks-badge" hidden></span>
+      </button>
+      <button class="nav-item" data-view="timer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2"/><path d="M9 2h6"/></svg>
+        <span>Focus Timer</span>
+      </button>
+      <button class="nav-item" data-view="schedule">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        <span>Schedule</span>
+      </button>
+      <button class="nav-item" data-view="stats">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+        <span>Statistics</span>
+      </button>
+      <button class="nav-item" data-view="subjects">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        <span>Subjects</span>
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="btn-ghost" id="btn-theme" aria-label="Toggle dark mode">
+        <span class="theme-icon" id="theme-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </span>
+        <span id="theme-label">Dark mode</span>
+      </button>
+    </div>
+  </aside>
+  <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
+  <!-- ======================= MAIN ======================= -->
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="icon-btn menu-btn" id="btn-menu" aria-label="Open menu">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+        </button>
+        <h1 id="view-title">Dashboard</h1>
+      </div>
+      <div class="topbar-right">
+        <div class="clock" id="clock" aria-live="off"></div>
+        <button class="btn btn-primary" id="btn-new-task">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          <span>New Task</span>
+        </button>
+      </div>
+    </header>
+
+    <div class="views">
+
+      <!-- ================= DASHBOARD ================= -->
+      <section class="view active" id="view-dashboard" aria-label="Dashboard">
+        <div class="hero card">
+          <div class="hero-text">
+            <div class="hero-greeting" id="hero-greeting">Hello there</div>
+            <h2 class="hero-quote" id="hero-quote"></h2>
+            <p class="hero-date" id="hero-date"></p>
+          </div>
+          <div class="hero-actions">
+            <button class="btn btn-primary" data-goto="timer">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+              <span>Start focusing</span>
+            </button>
+            <button class="btn btn-soft" data-goto="tasks">View tasks</button>
+          </div>
+        </div>
+
+        <div class="stat-grid" id="dash-stats"></div>
+
+        <div class="dash-grid">
+          <div class="card panel">
+            <div class="panel-head">
+              <h3>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                Today's Smart Plan
+              </h3>
+              <span class="chip" id="plan-total"></span>
+            </div>
+            <div id="smart-plan" class="smart-plan"></div>
+          </div>
+
+          <div class="dash-col">
+            <div class="card panel">
+              <div class="panel-head">
+                <h3>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                  Upcoming deadlines
+                </h3>
+              </div>
+              <div id="upcoming-list"></div>
+            </div>
+            <div class="card panel" id="dash-alerts-panel">
+              <div class="panel-head">
+                <h3>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg>
+                  Planner alerts
+                </h3>
+              </div>
+              <div id="dash-alerts"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= TASKS ================= -->
+      <section class="view" id="view-tasks" aria-label="Tasks">
+        <div class="toolbar card">
+          <div class="search-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <input id="task-search" type="text" placeholder="Search tasks..." autocomplete="off">
+          </div>
+          <select id="filter-subject" aria-label="Filter by subject"></select>
+          <select id="filter-status" aria-label="Filter by status">
+            <option value="all">All statuses</option>
+            <option value="pending">Pending</option>
+            <option value="completed">Completed</option>
+            <option value="overdue">Overdue</option>
+          </select>
+          <select id="sort-by" aria-label="Sort tasks">
+            <option value="smart">Sort: Smart priority</option>
+            <option value="deadline">Sort: Deadline</option>
+            <option value="priority">Sort: Priority</option>
+            <option value="created">Sort: Newest</option>
+          </select>
+        </div>
+        <div class="task-list" id="task-list"></div>
+      </section>
+
+      <!-- ================= TIMER ================= -->
+      <section class="view" id="view-timer" aria-label="Focus timer">
+        <div class="timer-layout">
+          <div class="card timer-card">
+            <div class="timer-modes" role="tablist">
+              <button class="mode-btn active" data-mode="focus" role="tab">Focus</button>
+              <button class="mode-btn" data-mode="short" role="tab">Short Break</button>
+              <button class="mode-btn" data-mode="long" role="tab">Long Break</button>
+            </div>
+
+            <div class="timer-ring-wrap">
+              <svg class="timer-ring" viewBox="0 0 260 260" aria-hidden="true">
+                <circle class="ring-bg" cx="130" cy="130" r="115"/>
+                <circle class="ring-fg" id="ring-fg" cx="130" cy="130" r="115"/>
+              </svg>
+              <div class="timer-display">
+                <span class="timer-time" id="timer-time">25:00</span>
+                <span class="timer-label" id="timer-label">Focus session</span>
+              </div>
+            </div>
+
+            <div class="timer-controls">
+              <button class="btn btn-primary btn-lg" id="btn-timer-start">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" id="btn-timer-icon"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+                <span id="btn-timer-text">Start</span>
+              </button>
+              <button class="btn btn-soft" id="btn-timer-reset">Reset</button>
+            </div>
+
+            <div class="timer-config">
+              <label>Focus <input type="number" id="cfg-focus" min="5" max="120" step="5" value="25"> min</label>
+              <label>Short <input type="number" id="cfg-short" min="1" max="60" step="1" value="5"> min</label>
+              <label>Long <input type="number" id="cfg-long" min="5" max="60" step="5" value="15"> min</label>
+            </div>
+            <p class="timer-note">Completed focus sessions are logged automatically with the subject and task selected below.</p>
+          </div>
+
+          <div class="timer-side">
+            <div class="card panel">
+              <div class="panel-head"><h3>Session details</h3></div>
+              <label class="field"><span>Subject</span>
+                <select id="timer-subject"></select>
+              </label>
+              <label class="field"><span>Task (optional)</span>
+                <select id="timer-task"></select>
+              </label>
+            </div>
+            <div class="card panel">
+              <div class="panel-head">
+                <h3>Today's sessions</h3>
+                <span class="chip" id="today-minutes"></span>
+              </div>
+              <div id="today-sessions"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SCHEDULE ================= -->
+      <section class="view" id="view-schedule" aria-label="Weekly schedule">
+        <div class="toolbar card schedule-toolbar">
+          <div class="week-nav">
+            <button class="icon-btn" id="week-prev" aria-label="Previous week">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <div class="week-label" id="week-label"></div>
+            <button class="icon-btn" id="week-next" aria-label="Next week">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+          <button class="btn btn-soft" id="week-today">This week</button>
+        </div>
+
+        <div class="week-grid" id="week-grid"></div>
+
+        <div class="card panel">
+          <div class="panel-head"><h3>Focus minutes this week</h3></div>
+          <div class="bar-chart" id="week-bars"></div>
+        </div>
+      </section>
+
+      <!-- ================= STATS ================= -->
+      <section class="view" id="view-stats" aria-label="Statistics">
+        <div class="stat-grid" id="stats-cards"></div>
+        <div class="stats-grid-2">
+          <div class="card panel">
+            <div class="panel-head"><h3>Focus time by subject</h3></div>
+            <div class="donut-layout" id="donut-layout">
+              <div class="donut-wrap">
+                <div class="donut" id="subject-donut"></div>
+                <div class="donut-hole"><span id="donut-total"></span></div>
+              </div>
+              <div class="donut-legend" id="donut-legend"></div>
+            </div>
+          </div>
+          <div class="card panel">
+            <div class="panel-head"><h3>Daily focus - last 14 days</h3></div>
+            <div class="bar-chart tall" id="daily-bars"></div>
+          </div>
+        </div>
+        <div class="card panel">
+          <div class="panel-head"><h3>Subject breakdown</h3></div>
+          <div class="table-wrap" id="subject-table"></div>
+        </div>
+      </section>
+
+      <!-- ================= SUBJECTS ================= -->
+      <section class="view" id="view-subjects" aria-label="Subjects">
+        <div class="subjects-grid" id="subjects-grid"></div>
+        <div class="card panel danger-zone">
+          <div class="panel-head"><h3>Data management</h3></div>
+          <p class="hint">Reset the planner to sample data to explore features, or clear everything for a fresh start. These actions cannot be undone.</p>
+          <div class="danger-actions">
+            <button class="btn btn-soft" id="btn-reset-demo">Load sample data</button>
+            <button class="btn btn-danger-soft" id="btn-reset-empty">Clear all data</button>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<!-- ======================= TASK MODAL ======================= -->
+<div class="modal-backdrop" id="modal-task" role="dialog" aria-modal="true" aria-labelledby="task-modal-title">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="task-modal-title">New Task</h3>
+      <button class="icon-btn modal-close" data-close="modal-task" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <form id="form-task" class="modal-body">
+      <label class="field"><span>Title *</span>
+        <input id="task-title" required maxlength="160" placeholder="e.g. Finish calculus problem set" autocomplete="off">
+      </label>
+      <div class="field-row">
+        <label class="field"><span>Subject</span>
+          <select id="task-subject"></select>
+        </label>
+        <label class="field"><span>Priority</span>
+          <select id="task-priority">
+            <option value="1">High</option>
+            <option value="2" selected>Medium</option>
+            <option value="3">Low</option>
+          </select>
+        </label>
+      </div>
+      <div class="field-row">
+        <label class="field"><span>Deadline *</span>
+          <input type="datetime-local" id="task-deadline" required>
+        </label>
+        <label class="field"><span>Estimated hours</span>
+          <input type="number" id="task-hours" min="0.25" max="500" step="0.25" value="1">
+        </label>
+      </div>
+      <div class="modal-foot">
+        <button type="button" class="btn btn-soft modal-close" data-close="modal-task">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="task-save">Add task</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ======================= SUBJECT MODAL ======================= -->
+<div class="modal-backdrop" id="modal-subject" role="dialog" aria-modal="true" aria-labelledby="subject-modal-title">
+  <div class="modal modal-sm">
+    <div class="modal-head">
+      <h3 id="subject-modal-title">New Subject</h3>
+      <button class="icon-btn modal-close" data-close="modal-subject" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <form id="form-subject" class="modal-body">
+      <label class="field"><span>Name *</span>
+        <input id="subject-name" required maxlength="40" placeholder="e.g. Organic Chemistry" autocomplete="off">
+      </label>
+      <div class="field">
+        <span>Colour</span>
+        <div class="swatches" id="color-swatches"></div>
+      </div>
+      <div class="modal-foot">
+        <button type="button" class="btn btn-soft modal-close" data-close="modal-subject">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="subject-save">Add subject</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ======================= CONFIRM MODAL ======================= -->
+<div class="modal-backdrop" id="modal-confirm" role="dialog" aria-modal="true">
+  <div class="modal modal-sm">
+    <div class="modal-head">
+      <h3 id="confirm-title">Are you sure?</h3>
+      <button class="icon-btn modal-close" data-close="modal-confirm" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <p class="confirm-msg" id="confirm-msg"></p>
+      <div class="modal-foot">
+        <button class="btn btn-soft modal-close" data-close="modal-confirm">Cancel</button>
+        <button class="btn btn-danger" id="confirm-ok">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toasts" aria-live="polite"></div>
+
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
